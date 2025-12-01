@@ -210,16 +210,17 @@ class Trainer():
             train_loss.append(avg_train_loss)
             
             # Evaluation phase
-            if epoch % args.valid_interval == 0 or epoch == args.max_epoch:
-                valid_epoch_loss = self.get_loss(valid_loader, args.device,eval_batch_size=args.valid_batch_size)
-                valid_loss.append(valid_epoch_loss)
-            
-                epoch_time = time.time() - epoch_start_time
-                logging.info(f'Epoch: {epoch:^5} | Train loss: {avg_train_loss:.5f} | Valid loss: {valid_epoch_loss:.5f} | Time: {epoch_time:.2f}s')
+            # if epoch % args.valid_interval == 0 or epoch == args.max_epoch:
+            self.net.eval()
+            valid_epoch_loss = self.get_loss(valid_loader, args.device,eval_batch_size=args.valid_batch_size)
+            valid_loss.append(valid_epoch_loss)
+        
+            epoch_time = time.time() - epoch_start_time
+            logging.info(f'Epoch: {epoch:^5} | Train loss: {avg_train_loss:.5f} | Valid loss: {valid_epoch_loss:.5f} | Time: {epoch_time:.2f}s')
 
-            else:
-                epoch_time = time.time() - epoch_start_time
-                logging.info(f'Epoch: {epoch:^5} | Train loss: {avg_train_loss:.5f}  | Time: {epoch_time:.2f}s')
+            # else:
+            #     epoch_time = time.time() - epoch_start_time
+            #     logging.info(f'Epoch: {epoch:^5} | Train loss: {avg_train_loss:.5f}  | Time: {epoch_time:.2f}s')
             
             # Save checkpoints and loss plots
             if epoch % 10 == 0:
@@ -343,16 +344,16 @@ class Trainer():
             train_loss.append(avg_train_loss)
 
             # Evaluation phase
-            if epoch % args.valid_interval == 0 or epoch == args.max_epoch:
-                self.net.eval()
-                valid_epoch_loss = self.get_loss(valid_loader, args.device, eval_batch_size=args.valid_batch_size)
-                valid_loss.append(valid_epoch_loss)
-                epoch_time = time.time() - epoch_start_time
-                logging.info(f'Epoch: {epoch:^5} | Rank: {rank:^2} | Train loss: {avg_train_loss:.5f} | Valid loss: {valid_epoch_loss:.5f} | Time: {epoch_time:.2f}s')
-            else:
-                # Log progress
-                epoch_time = time.time() - epoch_start_time
-                logging.info(f'Epoch: {epoch:^5} | Rank: {rank:^2} | Train loss: {avg_train_loss:.5f}  | Time: {epoch_time:.2f}s')
+            # if epoch % args.valid_interval == 0 or epoch == args.max_epoch:
+            self.net.eval()
+            valid_epoch_loss = self.get_loss(valid_loader, args.device, eval_batch_size=args.valid_batch_size)
+            valid_loss.append(valid_epoch_loss)
+            epoch_time = time.time() - epoch_start_time
+            logging.info(f'Epoch: {epoch:^5} | Rank: {rank:^2} | Train loss: {avg_train_loss:.5f} | Valid loss: {valid_epoch_loss:.5f} | Time: {epoch_time:.2f}s')
+            # else:
+            #     # Log progress
+            #     epoch_time = time.time() - epoch_start_time
+            #     logging.info(f'Epoch: {epoch:^5} | Rank: {rank:^2} | Train loss: {avg_train_loss:.5f}  | Time: {epoch_time:.2f}s')
             
             # Save checkpoints and loss plots (only on rank 0)
             if epoch % 10 == 0:

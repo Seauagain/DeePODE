@@ -12,7 +12,7 @@ def parser():
     parser.add_argument('--zero_gradient', nargs='+', default=[ ], type=str, help='species with zero rate of change')
 
     # ========================= Data Configs ==========================
-    parser.add_argument('--dataset_type', type=str, help='dataset type: base/chemical/nuclear')
+    parser.add_argument('--dataset_type', type=str, default="chemical", help='dataset type: base/chemical/nuclear')
     parser.add_argument('--input_path', type=str, help='input dataset dir')
     parser.add_argument('--label_path', type=str, help='label dataset dir')
     parser.add_argument('--shuffle', action='store_false', help='shuffle the training dataset') # default true
