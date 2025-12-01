@@ -224,7 +224,7 @@ def main():
             "model_root": "models",
             "modelname": "DRM19-test-gbct",  # Model name
             "epoch": 5000,                   # Training epochs
-            "mech_path": "chemical_mechanism/DRM19.cti", # Mechanism file path
+            "mech_path": "mechanism/DRM19.cti", # Mechanism file path
             "input_path": "dataset/DRM19/DRM19_0d_manifold_X.npy", # Input data file path
             "label_path": "dataset/DRM19/DRM19_0d_manifold_Y.npy", # Label data file path
             "data_name": "DRM19_0d_manifold", # Data name
@@ -253,7 +253,7 @@ def main():
             "model_root": "models",
             "modelname": "DRM19-test-gbct",  # Model name
             "epoch": 5000,                   # Training epochs
-            "mech_path": "chemical_mechanism/DRM19.cti", # Mechanism file path
+            "mech_path": "mechanism/DRM19.cti", # Mechanism file path
             "input_path": "dataset/DRM19/DRM19_0d_manifold_X.npy", # Input data file path
             "pred_path": "",                  # Prediction output path (optional)
         }
@@ -277,7 +277,7 @@ def main():
             "model_root": "models",
             "modelname": "DRM19-test-gbct",  # Model name
             "epoch": 5000,                   # Training epochs
-            "mech_path": "chemical_mechanism/DRM19.cti", # Mechanism file path
+            "mech_path": "mechanism/DRM19.cti", # Mechanism file path
             "phi": 1.0,                      # Equivalence ratio
             "temperature": 1400,             # Temperature (K)
             "pressure": 1.0,                 # Pressure (atm)
@@ -329,7 +329,7 @@ def main():
             "model_root": "models",
             "modelname": "DRM19-test",       # Model name
             "epoch": 5000,                   # Training epochs
-            "mech_path": "chemical_mechanism/DRM19.cti", # Mechanism file path
+            "mech_path": "mechanism/DRM19.cti", # Mechanism file path
         }
 
         quick_parser = subparsers.add_parser("quick", help="Quick prediction with all-ones vector")

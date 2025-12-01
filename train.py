@@ -25,7 +25,7 @@ def main():
     args.modelname = f"DRM19-0D1DPert-ckv8-deepode"
     args.input_path = "/home/yiyuxiao/data/AI4S/DeePCK/Data/DRM19/DRM19_2200wFlameMFPert_X.npy"
     args.label_path = "/home/yiyuxiao/data/AI4S/DeePCK/Data/DRM19/DRM19_2200wFlameMFPert_Y.npy"
-    args.mech_path = "chemical_mechanism/DRM19.cti"
+    args.mech_path = "mechanism/DRM19.cti"
     args.zero_input = ["ar"]
     args.zero_gradient = ["p", "N2"]
 
