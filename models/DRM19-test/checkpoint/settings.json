@@ -1,0 +1,63 @@
+{
+    "seed": 2022,
+    "mech_path": "Chem/DRM19.cti",
+    "zero_input": [
+        "ar"
+    ],
+    "zero_gradient": [
+        "p",
+        "N2"
+    ],
+    "input_path": "data/DRM19/DRM19_X.npy",
+    "label_path": "data/DRM19/DRM19_Y.npy",
+    "shuffle": true,
+    "batch_size": 1024,
+    "valid_batch_size": 8192,
+    "train_size": 20904690,
+    "valid_size": 2322744,
+    "valid_ratio": 0.1,
+    "prefetch": 10,
+    "num_workers": 16,
+    "pin_memory": true,
+    "power_transform": 0.1,
+    "delta_t": 1e-06,
+    "use_GBCT": false,
+    "lam": 0.5,
+    "dim": 22,
+    "input_dim": 22,
+    "label_dim": 22,
+    "layers": [
+        22,
+        1600,
+        800,
+        400,
+        22
+    ],
+    "net_type": "fc",
+    "actfun": "gelu",
+    "TRange": [
+        200,
+        3600
+    ],
+    "max_epoch": 5000,
+    "epoch_decay": 2500,
+    "learnrate": 0.0001,
+    "lr_decay_rate": 0.1,
+    "batch_grow_rate": 128,
+    "lossfun": "L1",
+    "optim": "Adam",
+    "modelname": "DRM19-test",
+    "model_path": "model/DRM19-test",
+    "device": "cuda:0",
+    "n_gpu": 8,
+    "use_DP": false,
+    "use_DDP": true,
+    "cuda_ids": "0,1,2,3",
+    "master_host": "127.0.0.1",
+    "master_port": "12355",
+    "local_rank": -1,
+    "world_size": 4,
+    "backend": "nccl",
+    "description": "测试下相应的数据集",
+    "current_time": "2024-10-27 22:18:28"
+}
