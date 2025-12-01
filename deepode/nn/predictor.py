@@ -59,7 +59,7 @@ class Predictor():
         self.net = dnn_types[args.net_type](args)
         logging.info(f"The neural network is created. Network type: {args.net_type}")
 
-    def load_model(self, modelname, epoch, device="cpu", model_root="model"):
+    def load_model(self, modelname, epoch, device="cpu", model_root="models"):
         """Load a checkpoint, args and norm on cpu.
         
         Parameters
@@ -248,10 +248,10 @@ class Predictor():
         output_bct[:, self.num_nonspecies:] = self.data_processor.inverse_box_cox(output_bct[:, self.num_nonspecies:], bct_lamda)
 
         # energy conservation, use cantera to correct the temperature
-        # if is_single_state:
-        #     print("\reneregy conservation correct for chemical data", end="")
-        #     self.gas.HPY = enthalpy, pressure, output_bct[:, 2:]
-        #     output_bct[:, 0] = self.gas.T
+        if is_single_state:
+            print("\reneregy conservation correct for chemical data", end="")
+            self.gas.HPY = enthalpy, pressure, output_bct[:, 2:]
+            output_bct[:, 0] = self.gas.T
 
         return output_bct
 
