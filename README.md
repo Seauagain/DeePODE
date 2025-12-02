@@ -1,9 +1,9 @@
 <div align="center">
 
 
-<h1>
+<h2>
 DeePODE: Solving Multiscale Dynamical Systems by Deep Learning
-</h1>
+</h2>
 
 <p align="center">
   <a href="https://doi.org/10.1016/j.cpc.2025.109802"><img src="https://img.shields.io/badge/Paper-Computer_Physics_Communications-0056D2.svg?style=flat-square" alt="Paper"></a>
@@ -120,13 +120,18 @@ DeePODE significantly reduces computational time compared to Direct Integration 
 <a name="quick-start"></a>
 ## 🚀 Quick Start
 
-### Installation
+### (option 1) Install via conda
 ```bash
-git clone [https://github.com/YourUsername/DeePODE.git](https://github.com/YourUsername/DeePODE.git)
-cd DeePODE
-pip install -r requirements.txt
+conda install pytorch
+conda install --channel cantera cantera==2.6.0 -y
+conda install numpy matplotlib seaborn scikit-learn pandas -y
+pip install easydict scienceplots meshio -i https://pypi.tuna.tsinghua.edu.cn/simple
+conda install -c conda-forge mpi4py openmpi
 ```
-
+### (option 2) Install via docker
+```bash 
+docker pull ckode/deepck:1.0.0_pytorch1.12_cuda11.3
+```
 
 
 
