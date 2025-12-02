@@ -285,7 +285,7 @@ class Trainer():
         setup_logging(args)
 
         # Create dataloaders after initializing process group
-        train_loader, valid_loader, norm_params = create_dataloaders(args, distributed=True,rank=rank)
+        train_loader, valid_loader, norm_params = create_dataloaders(args, distributed=True, rank=rank)
         # Move model to device and wrap with DDP
         self.net = self.net.to(args.device)
         self.net = DDP(self.net, device_ids=[rank], output_device=rank)
@@ -304,56 +304,64 @@ class Trainer():
         valid_loss = []
         lr_current = args.learnrate
         batch_current = args.batch_size
-        inputs_data, labels_data = train_loader[:]
+        inputs_train, labels_train = train_loader[:]          ## Hint: extract data blocks to speed up the epoch!
+        inputs_train = inputs_train.contiguous().pin_memory() ## Hint: use pinned memory to accelerate IO
+        labels_train = labels_train.contiguous().pin_memory()
+        
+
+        inputs_valid, labels_valid = valid_loader[:]         
+        inputs_valid = inputs_valid.contiguous().pin_memory() 
+        labels_valid = labels_valid.contiguous().pin_memory()
+        
+
+        batch_current = args.batch_size
+        total_samples = inputs_train.size(0)
      
         # Training loop
         for epoch in range(init_epoch, args.max_epoch + 1):
             epoch_start_time = time.time()
             
-            # Learning rate and batch size adjustment
+            # Learning rate and batch size schedule
             if epoch % args.epoch_decay == 0 and epoch > init_epoch:
                 batch_current = min(int(batch_current * args.batch_grow_rate), args.max_batch_size) if hasattr(args, 'max_batch_size') else int(batch_current * args.batch_grow_rate)
                 lr_current = lr_current * args.lr_decay_rate
                 self.optimizer = optim.Adam(self.net.parameters(), lr=lr_current)
                 logging.info(f"Process {rank}: Adjusted learning rate to {lr_current} and batch size to {batch_current}")
             
+            # evaluate the full-batch loss on training and validation dataset
+            self.net.eval()
+            train_temp_loss=self.get_loss(inputs_train, labels_train, args.device, eval_batch_size=args.valid_batch_size)
+            valid_temp_loss=self.get_loss(inputs_valid, labels_valid, args.device, eval_batch_size=args.valid_batch_size)
+            train_loss.append(train_temp_loss)
+            valid_loss.append(valid_temp_loss)
+            # train_temp_loss = 1e-3 ## dryrun
+            # valid_temp_loss = 1e-3
+
             # Training phase
             self.net.train()
+            # shuffle_indices = torch.randperm(total_samples)
+            batch_count =  math.ceil(total_samples / args.batch_size)
             epoch_loss = 0
-            batch_count =  math.ceil(train_loader.__len__() / args.batch_size)
             for step in range(batch_count):
-                index_start = step * args.batch_size
-                index_end = min(index_start + args.batch_size, train_loader.__len__())
-                # inputs,labels = train_loader[index_start:index_end]
-                inputs = inputs_data[index_start:index_end]
-                labels = labels_data[index_start:index_end]
+                index_start = step * batch_current
+                index_end = min(index_start + batch_current, total_samples)
+                # batch_indices = shuffle_indices[index_start:index_end]    ## shuffle
+                # batch_indices = [index_start:index_end]    ## shuffle
+                inputs = inputs_train[index_start:index_end]
+                labels = labels_train[index_start:index_end]
                 if torch.cuda.is_available():
-                    inputs = inputs.to(args.device)
-                    labels = labels.to(args.device)
-                # Forward pass
+                    inputs = inputs.to(args.device, non_blocking=True)
+                    labels = labels.to(args.device, non_blocking=True)
+                # Forward
                 outputs = self.net(inputs)
                 loss = self.loss_fun(outputs, labels).mean()
-                # Backward pass and optimization
+                # Backward and optimization
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
-                epoch_loss += loss.item()
-                # t2 = time.time()
-            # Calculate average training loss for this epoch
-            avg_train_loss = epoch_loss / batch_count if batch_count > 0 else float('inf')
-            train_loss.append(avg_train_loss)
 
-            # Evaluation phase
-            # if epoch % args.valid_interval == 0 or epoch == args.max_epoch:
-            self.net.eval()
-            valid_epoch_loss = self.get_loss(valid_loader, args.device, eval_batch_size=args.valid_batch_size)
-            valid_loss.append(valid_epoch_loss)
             epoch_time = time.time() - epoch_start_time
-            logging.info(f'Epoch: {epoch:^5} | Rank: {rank:^2} | Train loss: {avg_train_loss:.5f} | Valid loss: {valid_epoch_loss:.5f} | Time: {epoch_time:.2f}s')
-            # else:
-            #     # Log progress
-            #     epoch_time = time.time() - epoch_start_time
-            #     logging.info(f'Epoch: {epoch:^5} | Rank: {rank:^2} | Train loss: {avg_train_loss:.5f}  | Time: {epoch_time:.2f}s')
+            logging.info(f'Epoch: {epoch:^5} | Rank: {rank:^2} | Train loss: {train_temp_loss:.5f} | Valid loss: {valid_temp_loss:.5f} | Time: {epoch_time:.2f}s')
             
             # Save checkpoints and loss plots (only on rank 0)
             if epoch % 10 == 0:
@@ -376,13 +384,15 @@ class Trainer():
         dist.destroy_process_group()
         logging.info(f"Process {rank}: Training completed successfully")
     
-    def get_loss(self, dataloader, device, eval_batch_size=None):
+    def get_loss(self, inputs_data, labels_data, device, eval_batch_size=None):
         """Calculate the full loss on a given dataset.
         
         Parameters
         ----------
-        dataloader : torch.utils.data.DataLoader
-            DataLoader containing the dataset.
+        inputs_data : torch.Tensor
+            The input features tensor containing the full (or chunked) dataset.
+        labels_data : torch.Tensor
+            The target labels tensor corresponding to the inputs.
         device : str
             CPU or GPU device, e.g., 'cuda:0', 'cuda:1', or 'cpu'.
         eval_batch_size : int, optional
@@ -400,22 +410,19 @@ class Trainer():
         total_samples = 0
         
         self.net.eval()
-        
-        inputs_data,labels_data = dataloader[:]
-        
-        batch_count = math.ceil(inputs_data.__len__() / eval_batch_size)
-        
+        # inputs_data, labels_data = dataloader[:]
+        batch_count = math.ceil(len(inputs_data) / eval_batch_size)
+    
         with torch.no_grad():
             for step in range(batch_count):
                 index_start = step * eval_batch_size
                 index_end = min(index_start + eval_batch_size, inputs_data.__len__())
                 inputs = inputs_data[index_start:index_end]
                 labels = labels_data[index_start:index_end]
-                
                 if torch.cuda.is_available():
                     try:
-                        inputs = inputs.to(device)
-                        labels = labels.to(device)
+                        inputs = inputs.to(device, non_blocking=True)
+                        labels = labels.to(device, non_blocking=True)
                     except Exception as e:
                         logging.error(f"ERROR occurs in get_loss(): {e}")
                         sys.exit(0)
@@ -538,7 +545,7 @@ class Trainer():
                           color="chocolate",
                           linewidth=2,
                           alpha=1)
-        p2, = plot_handle(np.arange(1, n_iters_valid + 1) * args.valid_interval,
+        p2, = plot_handle(range(1, n_iters_train + 1),
                           valid_loss,
                           color="forestgreen",
                           linestyle='-.',
