@@ -61,7 +61,7 @@ The method consists of three phases (as shown in Figure 1 of the paper):
 > **Note:** The trained DNN acts as a time-stepper, predicting the state change $x(t+\Delta t)$ from $x(t)$ with a large $\Delta t$, bypassing the stiffness limit of traditional explicit solvers.
 
 <p align="center">
-  <img src="assets/img/method.png" width="800">
+  <img src="assets/img/method.png" width="600">
 </p>
 
 
@@ -83,8 +83,8 @@ DeePODE was integrated into CFD codes (EBI-DNS, OpenFOAM) for complex reactive f
 - **Stability:** Stable prediction in 2D/3D turbulent cases over long horizons.
 
 <p align="center">
-  <img src="assets/img/result-1.png" width="800">
-  <img src="assets/img/result-2.png" width="800">
+  <img src="assets/img/result-1.png" width="600">
+  <img src="assets/img/result-2.png" width="600">
 </p>
 
 
@@ -96,7 +96,7 @@ DeePODE was integrated into CFD codes (EBI-DNS, OpenFOAM) for complex reactive f
 DeePODE significantly reduces computational time compared to Direct Integration (DI) using CVODE.
 
 <p align="center">
-    <img src="assets/img/efficiency.png" width="800">
+    <img src="assets/img/efficiency.png" width="600">
 </p>
 
 > **Key Takeaway:** The speedup is particularly significant on GPU architectures for large-scale simulations (up to **270x**).
@@ -110,7 +110,7 @@ DeePODE significantly reduces computational time compared to Direct Integration 
 * **Error Control:** Unlike traditional explicit schemes where error explodes, DeePODE's error remains bounded. The "solver indicator" (based on probability density) can further filter out unreliable predictions.
 
 <p align="center">
-    <img src="assets/img/analysis-timescale.png" width="800">
+    <img src="assets/img/analysis-timescale.png" width="600">
 </p>
 
 
