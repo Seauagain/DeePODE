@@ -1,6 +1,5 @@
 <div align="center">
 
-
 <h2>
 DeePODE: Solving Multiscale Dynamical Systems by Deep Learning
 </h2>
@@ -45,7 +44,7 @@ DeePODE overcomes the **"Curse of Dimensionality"** and **stiffness constraints*
 - **🎯 Precision:** Capable of capturing **multiscale dynamics** spanning orders of magnitude (from $10^{-9}s$ to $1s$).
 - **🧩 Generalization:** A "Train Once, Use Anywhere" paradigm. A trained DeePODE model can be seamlessly integrated into 0D, 1D, 2D, and 3D simulations without retraining.
 
----
+
 
 ## 🛠️ Method
 
@@ -65,7 +64,7 @@ The method consists of three phases (as shown in Figure 1 of the paper):
 </p>
 
 
----
+
 
 ## 🏆 Results
 
@@ -89,7 +88,7 @@ DeePODE was integrated into CFD codes (EBI-DNS, OpenFOAM) for complex reactive f
 
 
 
----
+
 
 ## ⚡ Efficiency
 
@@ -101,7 +100,7 @@ DeePODE significantly reduces computational time compared to Direct Integration 
 
 > **Key Takeaway:** The speedup is particularly significant on GPU architectures for large-scale simulations (up to **270x**).
 
----
+
 
 ## 🔍 Analysis
 
@@ -115,7 +114,7 @@ DeePODE significantly reduces computational time compared to Direct Integration 
 
 
 
----
+
 
 <a name="quick-start"></a>
 ## 🚀 Quick Start
@@ -132,6 +131,10 @@ conda install -c conda-forge mpi4py openmpi
 ```bash 
 docker pull ckode/deepck:1.0.0_pytorch1.12_cuda11.3
 ```
+
+###  
+
+
 
 
 
