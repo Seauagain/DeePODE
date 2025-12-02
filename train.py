@@ -1,20 +1,20 @@
 """
 Training Entrance
 """
+import os
+os.environ["PYTHONWARNINGS"] = "ignore::UserWarning:scipy" 
+os.environ["PYTHONWARNINGS"] = "ignore:pkg_resources is deprecated"
 
 from deepode.nn import Trainer
-# from deepode.nn.DataLoad import loadData
 from deepode.nn.utils import *
 from deepode.nn.config import parser
 
-import os 
-os.environ["PYTHONWARNINGS"] = "ignore::UserWarning:scipy" 
 
 def run_training_entry(args):
     trainer = Trainer()
     trainer.init_dataloaders(args)
     trainer.build_model(args)
-    logging_args(args)        ## print hyper-parameters in log file
+    logging_args(args)         ## print hyper-parameters in log file
     trainer.run_training(args)
 
 
