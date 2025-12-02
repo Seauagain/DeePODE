@@ -139,9 +139,9 @@ docker pull ckode/deepck:1.0.0_pytorch1.12_cuda11.3
 ##  ⚡ Inference with Our Checkpoints
 DeepODE provides a comprehensive command-line interface for performing inference with pre-trained models, supporting temporal evolution simulation, one-step validation, and model export into torch scripts.
 
-> <span style="color: #8B0000">**Note:** The trained DNN acts as a temporal advancer, predicting the state change $x(t+\Delta t)$ from $x(t)$ with a large $\Delta t$, bypassing the stiffness limit of traditional explicit solvers.</span>
+> **Note:** The trained DNN acts as a temporal advancer, predicting the state change $x(t+\Delta t)$ from $x(t)$ with a large $\Delta t$, bypassing the stiffness limit of traditional explicit solvers.
 
-> <span style="color: #8B0000">**Note:** The chemical dataset is organized as $x(t) = [T, p , Yi]$ where $T$ is temperature, $p$ is pressure (atm) and $Y_i$ denotes the mass fraction of $i$-th species.</span>
+> **Note:** The chemical dataset is organized as $x(t) = [T, p , Yi]$ where $T$ is temperature, $p$ is pressure (atm) and $Y_i$ denotes the mass fraction of $i$-th species.
 
 
 ### Quick Dryrun
