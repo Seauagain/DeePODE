@@ -1,7 +1,7 @@
 import logging
 import torch
 import numpy as np
-import os, shutil, platform
+import os, shutil, platform, sys
 import time, random
 
 
@@ -19,12 +19,12 @@ def setup_device(args):
 
     if torch.cuda.is_available():
         os.environ['CUDA_VISIBLE_DEVICES'] = args.cuda_ids
-        if len(args.cuda_ids) >= 2:
+        if len(args.cuda_ids.split(",")) >= 2:
             args.use_ddp = True
             args.world_size = len(args.cuda_ids.split(","))
         else:
             args.use_ddp = False
-            args.device = f'cuda:{args.cuda_ids[0]}'
+    
 
 def setup_seed(args):
     r"""Set random seed for python, numpy and torch."""
@@ -96,3 +96,5 @@ def logging_args(args):
     r"""Show hyper-parameters in the header of log file."""
     for key, value in args.__dict__.items():
         logging.info(f"{key}: {value}")
+    import shlex
+    logging.info(f'command: python {shlex.join(sys.argv)}')

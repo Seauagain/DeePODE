@@ -162,7 +162,12 @@ class Trainer():
         valid_loss = []
         lr_current = args.learnrate
         batch_current = args.batch_size
-        inputs_data, labels_data = train_loader[:]
+
+        ## Hint: extract data blocks to speed up the epoch!
+        ## Hint: use pinned memory to accelerate IO
+        inputs_train, labels_train = self.contiguous_data(train_loader)
+        inputs_valid, labels_valid = self.contiguous_data(valid_loader)       
+        total_samples = inputs_train.size(0) 
         
         # Training loop
         for epoch in range(init_epoch, args.max_epoch + 1):
@@ -175,23 +180,27 @@ class Trainer():
                 self.optimizer = optim.Adam(self.net.parameters(), lr=lr_current)
                 logging.info(f"Adjusted learning rate to {lr_current} and batch size to {batch_current}")
             
+            # evaluate the full-batch loss on training and validation dataset
+            self.net.eval()
+            train_temp_loss=self.get_loss(inputs_train, labels_train, args.device, eval_batch_size=args.valid_batch_size)
+            valid_temp_loss=self.get_loss(inputs_valid, labels_valid, args.device, eval_batch_size=args.valid_batch_size)
+            train_loss.append(train_temp_loss)
+            valid_loss.append(valid_temp_loss)
+            # train_temp_loss = 1e-3 ## dryrun
+            # valid_temp_loss = 1e-3
+
             # Training phase
             self.net.train()
+            batch_count =  math.ceil(total_samples / batch_current)
             epoch_loss = 0
-            batch_count = 0
-            
-
-            t1 = time.time()
-
-            batch_count =  math.ceil(train_loader.__len__() / args.batch_size)
             for step in range(batch_count):
-                index_start = step * args.batch_size
-                index_end = min(index_start + args.batch_size, train_loader.__len__())
+                index_start = step * batch_current
+                index_end = min(index_start + batch_current, total_samples)
                 inputs = inputs_data[index_start:index_end]
                 labels = labels_data[index_start:index_end]
                 if torch.cuda.is_available():
-                    inputs = inputs.to(args.device)
-                    labels = labels.to(args.device)
+                    inputs = inputs.to(args.device, non_blocking=True)
+                    labels = labels.to(args.device, non_blocking=True)
                 # Forward pass
                 outputs = self.net(inputs)
                 loss = self.loss_fun(outputs, labels).mean()
@@ -201,27 +210,9 @@ class Trainer():
                 loss.backward()
                 self.optimizer.step()
                 
-                epoch_loss += loss.item()
-                batch_count += 1
-            t2 = time.time()
-            print("GPU耗时：", f"{t2-t1:.2f} s")
-            # Calculate average training loss for this epoch
-            avg_train_loss = epoch_loss / batch_count if batch_count > 0 else float('inf')
-            train_loss.append(avg_train_loss)
-            
-            # Evaluation phase
-            # if epoch % args.valid_interval == 0 or epoch == args.max_epoch:
-            self.net.eval()
-            valid_epoch_loss = self.get_loss(valid_loader, args.device,eval_batch_size=args.valid_batch_size)
-            valid_loss.append(valid_epoch_loss)
-        
             epoch_time = time.time() - epoch_start_time
-            logging.info(f'Epoch: {epoch:^5} | Train loss: {avg_train_loss:.5f} | Valid loss: {valid_epoch_loss:.5f} | Time: {epoch_time:.2f}s')
+            logging.info(f'Epoch: {epoch:^5} | Train loss: {train_temp_loss:.5f} | Valid loss: {valid_temp_loss:.5f} | Time: {epoch_time:.2f}s')
 
-            # else:
-            #     epoch_time = time.time() - epoch_start_time
-            #     logging.info(f'Epoch: {epoch:^5} | Train loss: {avg_train_loss:.5f}  | Time: {epoch_time:.2f}s')
-            
             # Save checkpoints and loss plots
             if epoch % 10 == 0:
                 self.save_loss(train_loss, valid_loss, args)
@@ -255,6 +246,13 @@ class Trainer():
             args=(args, init_epoch),
             nprocs=args.world_size
         )
+    
+    @staticmethod
+    def contiguous_data(dataloader):
+        inputs, labels = dataloader[:]
+        inputs = inputs.contiguous().pin_memory() 
+        labels = labels.contiguous().pin_memory() 
+        return inputs, labels
     
     def train_ddp(self, rank, args, init_epoch):
         """Runner function for DistributedDataParallel training.
@@ -304,15 +302,11 @@ class Trainer():
         valid_loss = []
         lr_current = args.learnrate
         batch_current = args.batch_size
-        inputs_train, labels_train = train_loader[:]          ## Hint: extract data blocks to speed up the epoch!
-        inputs_train = inputs_train.contiguous().pin_memory() ## Hint: use pinned memory to accelerate IO
-        labels_train = labels_train.contiguous().pin_memory()
-        
-
-        inputs_valid, labels_valid = valid_loader[:]         
-        inputs_valid = inputs_valid.contiguous().pin_memory() 
-        labels_valid = labels_valid.contiguous().pin_memory()
-        
+ 
+        ## Hint: extract data blocks to speed up the epoch!
+        ## Hint: use pinned memory to accelerate IO
+        inputs_train, labels_train = self.contiguous_data(train_loader)
+        inputs_valid, labels_valid = self.contiguous_data(valid_loader)        
 
         batch_current = args.batch_size
         total_samples = inputs_train.size(0)
