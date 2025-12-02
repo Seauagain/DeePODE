@@ -139,9 +139,9 @@ docker pull ckode/deepck:1.0.0_pytorch1.12_cuda11.3
 ##  ⚡ Inference with Our Checkpoints
 DeepODE provides a comprehensive command-line interface for performing inference with pre-trained models, supporting temporal evolution simulation, one-step validation, and model export into torch scripts.
 
-> **Note:** The trained DNN acts as a temporal advancer, predicting the state change $x(t+\Delta t)$ from $x(t)$ with a large $\Delta t$, bypassing the stiffness limit of traditional explicit solvers.
+> <span style="color: #8B0000">**Note:** The trained DNN acts as a temporal advancer, predicting the state change $x(t+\Delta t)$ from $x(t)$ with a large $\Delta t$, bypassing the stiffness limit of traditional explicit solvers.</span>
 
-> **Note:** The chemical dataset is organized as $x(t) = [T, p , Yi]$ where $T$ is temperature, $p$ is pressure (atm) and $Y_i$ denotes the mass fraction of $i$-th species.
+> <span style="color: #8B0000">**Note:** The chemical dataset is organized as $x(t) = [T, p , Yi]$ where $T$ is temperature, $p$ is pressure (atm) and $Y_i$ denotes the mass fraction of $i$-th species.</span>
 
 
 ### Quick Dryrun
@@ -163,7 +163,7 @@ python pred.py onestep_plot \
 Load the model to simulate the temporal evolution of chemical reactions (e.g., Temperature and Species trajectories) and compare them with Cantera baselines:
 ```bash 
 python pred.py evolution \
-    --modelname "DRM19-0D1DPert-ckv8-deepode" \
+    --modelname "DRM19-test-gbct" \
     --epoch 5000 \
     --temperature 1650 \
     --n_step 2000 \
@@ -174,7 +174,7 @@ python pred.py evolution \
 Convert the trained PyTorch model to TorchScript for deployment:
 ```bash 
 python pred.py export \
-    --modelname "DRM19-test" \
+    --modelname "DRM19-test-gbct" \
     --epoch 5000 
 ```
 
