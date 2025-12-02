@@ -15,12 +15,16 @@ DeePODE: Solving Multiscale Dynamical Systems by Deep Learning
 <p align="center">
   <img src="https://img.shields.io/github/stars/intelligent-algorithm-team/intelligent-combustion?style=social" alt="Stars">
   <img src="https://img.shields.io/github/forks/intelligent-algorithm-team/intelligent-combustion?style=social" alt="Forks">
+  <img src="https://visitor-badge.laobi.icu/badge?page_id=Seauagain.DeePODE" alt="visitors">
 
 </p>
+
 
 <p align="center">
   <strong>Fast, Accurate, and Generalizable Solver for High-Dimensional Stiff ODEs</strong>
 </p>
+
+
 
 <p align="center">
   <a href="https://doi.org/10.1016/j.cpc.2025.109802"><strong>[Paper]</strong></a> |
@@ -160,7 +164,11 @@ docker pull ckode/deepck:1.0.0_pytorch1.12_cuda11.3
 ```
 
 <details>
-<summary><strong>Other related works</strong></summary>
+  <summary>
+    <span style="font-size:1.3rem; font-weight:600; display:inline-block; line-height:2;">
+      Other related works
+    </span>
+  </summary>
 
 
 ```bibtex
