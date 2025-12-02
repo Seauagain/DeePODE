@@ -136,11 +136,75 @@ conda install -c conda-forge mpi4py openmpi
 docker pull ckode/deepck:1.0.0_pytorch1.12_cuda11.3
 ```
 
-###  
+##  ⚡ Inference with Our Checkpoints
+DeepODE provides a comprehensive command-line interface for performing inference with pre-trained models, supporting temporal evolution simulation, one-step validation, and model export into torch scripts.
+
+> **Note:** The trained DNN acts as a temporal advancer, predicting the state change $x(t+\Delta t)$ from $x(t)$ with a large $\Delta t$, bypassing the stiffness limit of traditional explicit solvers.
+
+> **Note:** The chemical dataset is organized as $x(t) = [T, p , Yi]$ where $T$ is temperature, $p$ is pressure (atm) and $Y_i$ denotes the mass fraction of $i$-th species.
 
 
+### Quick Dryrun
+Load the model and perform a quick sanity check on a dummy vector:
+```bash 
+python pred.py dryrun --modelname "DRM19-test" --epoch 5000
+```
+
+### One-Step Prediction & Plotting
+Perform single-step prediction on the manifold and generate scatter plots (Pred vs. Label):
+```bash 
+python pred.py onestep_plot \
+    --epoch 5000 \
+    --size_show 10000 \
+    --show_temperature 1000,2500
+```
+
+### Temporal Evolution
+Load the model to simulate the temporal evolution of chemical reactions (e.g., Temperature and Species trajectories) and compare them with Cantera baselines:
+```bash 
+python pred.py evolution \
+    --modelname "DRM19-0D1DPert-ckv8-deepode" \
+    --epoch 5000 \
+    --temperature 1650 \
+    --n_step 2000 \
+    --reactor "constP"
+```
+
+### Export Model to TorchScript format
+Convert the trained PyTorch model to TorchScript for deployment:
+```bash 
+python pred.py export \
+    --modelname "DRM19-test" \
+    --epoch 5000 
+```
 
 
+## 💥 Retrain Your DeepODE Model
+
+DeepODE supports both Single-GPU and Distributed Data Parallel (DDP) training. The training script automatically handles dataset loading, model construction, and logging.
+
+### Data Preparation
+Ensure your input and label `.npy` files are prepared and the mechanism file path is correct before starting training. For chemical reaction, the datset is in the shape of $N\times (n_{s}+2)$, where $n_s$ is the total number of species. Each data is organized as $x(t) = [T,~p,~Yi]$.
+
+### Single-GPU Training
+Suitable for small-scale experiments or debugging:
+```bash 
+# Train on a single GPU (e.g., cuda:0)
+python train.py \
+    --device "cuda:0" \
+    --delta_t 1e-6 \
+    -note "DeepODE single GPU experiment"
+```
+
+### DDP Training
+```bash 
+# Distributed training on 8 GPUs
+python train.py \
+    -cuda 0,1,2,3,4,5,6,7 \
+    -ddp \
+    --delta_t 1e-6 \
+    -note "DeepODE DDP training benchmark"
+```
 
 
 
@@ -164,10 +228,7 @@ docker pull ckode/deepck:1.0.0_pytorch1.12_cuda11.3
 ```
 
 <details>
-  <summary>
-    <span style="font-size:1.3rem; font-weight:600; display:inline-block; line-height:2;">
-      Other related works
-    </span>
+  <summary><strong>Other related works</strong>
   </summary>
 
 
