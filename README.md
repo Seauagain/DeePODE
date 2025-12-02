@@ -1,6 +1,5 @@
 <div align="center">
 
-
 <h2>
 DeePODE: Solving Multiscale Dynamical Systems by Deep Learning
 </h2>
@@ -16,12 +15,16 @@ DeePODE: Solving Multiscale Dynamical Systems by Deep Learning
 <p align="center">
   <img src="https://img.shields.io/github/stars/intelligent-algorithm-team/intelligent-combustion?style=social" alt="Stars">
   <img src="https://img.shields.io/github/forks/intelligent-algorithm-team/intelligent-combustion?style=social" alt="Forks">
+  <img src="https://visitor-badge.laobi.icu/badge?page_id=Seauagain.DeePODE" alt="visitors">
 
 </p>
+
 
 <p align="center">
   <strong>Fast, Accurate, and Generalizable Solver for High-Dimensional Stiff ODEs</strong>
 </p>
+
+
 
 <p align="center">
   <a href="https://doi.org/10.1016/j.cpc.2025.109802"><strong>[Paper]</strong></a> |
@@ -45,7 +48,7 @@ DeePODE overcomes the **"Curse of Dimensionality"** and **stiffness constraints*
 - **🎯 Precision:** Capable of capturing **multiscale dynamics** spanning orders of magnitude (from $10^{-9}s$ to $1s$).
 - **🧩 Generalization:** A "Train Once, Use Anywhere" paradigm. A trained DeePODE model can be seamlessly integrated into 0D, 1D, 2D, and 3D simulations without retraining.
 
----
+
 
 ## 🛠️ Method
 
@@ -65,7 +68,7 @@ The method consists of three phases (as shown in Figure 1 of the paper):
 </p>
 
 
----
+
 
 ## 🏆 Results
 
@@ -89,7 +92,7 @@ DeePODE was integrated into CFD codes (EBI-DNS, OpenFOAM) for complex reactive f
 
 
 
----
+
 
 ## ⚡ Efficiency
 
@@ -101,7 +104,7 @@ DeePODE significantly reduces computational time compared to Direct Integration 
 
 > **Key Takeaway:** The speedup is particularly significant on GPU architectures for large-scale simulations (up to **270x**).
 
----
+
 
 ## 🔍 Analysis
 
@@ -115,7 +118,7 @@ DeePODE significantly reduces computational time compared to Direct Integration 
 
 
 
----
+
 
 <a name="quick-start"></a>
 ## 🚀 Quick Start
@@ -133,7 +136,75 @@ conda install -c conda-forge mpi4py openmpi
 docker pull ckode/deepck:1.0.0_pytorch1.12_cuda11.3
 ```
 
+##  ⚡ Inference with Our Checkpoints
+DeepODE provides a comprehensive command-line interface for performing inference with pre-trained models, supporting temporal evolution simulation, one-step validation, and model export into torch scripts.
 
+> **Note:** The trained DNN acts as a temporal advancer, predicting the state change $x(t+\Delta t)$ from $x(t)$ with a large $\Delta t$, bypassing the stiffness limit of traditional explicit solvers.
+
+> **Note:** The chemical dataset is organized as $x(t) = [T, p , Yi]$ where $T$ is temperature, $p$ is pressure (atm) and $Y_i$ denotes the mass fraction of $i$-th species.
+
+
+### Quick Dryrun
+Load the model and perform a quick sanity check on a dummy vector:
+```bash 
+python pred.py dryrun --modelname "DRM19-test" --epoch 5000
+```
+
+### One-Step Prediction & Plotting
+Perform single-step prediction on the manifold and generate scatter plots (Pred vs. Label):
+```bash 
+python pred.py onestep_plot \
+    --epoch 5000 \
+    --size_show 10000 \
+    --show_temperature 1000,2500
+```
+
+### Temporal Evolution
+Load the model to simulate the temporal evolution of chemical reactions (e.g., Temperature and Species trajectories) and compare them with Cantera baselines:
+```bash 
+python pred.py evolution \
+    --modelname "DRM19-test-gbct" \
+    --epoch 5000 \
+    --temperature 1650 \
+    --n_step 2000 \
+    --reactor "constP"
+```
+
+### Export Model to TorchScript format
+Convert the trained PyTorch model to TorchScript for deployment:
+```bash 
+python pred.py export \
+    --modelname "DRM19-test-gbct" \
+    --epoch 5000 
+```
+
+
+## 💥 Retrain Your DeepODE Model
+
+DeepODE supports both Single-GPU and Distributed Data Parallel (DDP) training. The training script automatically handles dataset loading, model construction, and logging.
+
+### Data Preparation
+Ensure your input and label `.npy` files are prepared and the mechanism file path is correct before starting training. For chemical reaction, the datset is in the shape of $N\times (n_{s}+2)$, where $n_s$ is the total number of species. Each data is organized as $x(t) = [T,~p,~Yi]$.
+
+### Single-GPU Training
+Suitable for small-scale experiments or debugging:
+```bash 
+# Train on a single GPU (e.g., cuda:0)
+python train.py \
+    --device "cuda:0" \
+    --delta_t 1e-6 \
+    -note "DeepODE single GPU experiment"
+```
+
+### DDP Training
+```bash 
+# Distributed training on 8 GPUs
+python train.py \
+    -cuda 0,1,2,3,4,5,6,7 \
+    -ddp \
+    --delta_t 1e-6 \
+    -note "DeepODE DDP training benchmark"
+```
 
 
 
@@ -157,7 +228,8 @@ docker pull ckode/deepck:1.0.0_pytorch1.12_cuda11.3
 ```
 
 <details>
-<summary><strong>Other related works</strong></summary>
+  <summary><strong>Other related works</strong>
+  </summary>
 
 
 ```bibtex
