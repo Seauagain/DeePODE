@@ -35,7 +35,7 @@ DeePODE: Solving Multiscale Dynamical Systems by Deep Learning
 
 </div>
 
--------
+
 
 ## 📣 Introduction
 
